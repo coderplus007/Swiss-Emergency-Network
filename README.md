@@ -241,9 +241,7 @@ Einige HAMNET-Knoten verfügen über Anbindungen ans Internet (über Tunnel/VPN 
 
 ### VoIP über AREDN
 
-Für das vorliegende System wird HAMNET als IP-Backbone eingesetzt, um die verschiedenen Standorte und Komponenten IP-basiert zu vernetzen. In der aktualisierten Architektur wird die VoIP-Telefonie jedoch nicht mehr unmittelbar über HAMNET abgewickelt, sondern über ein parallel eingebundenes AREDN-Mesh (Amateur Radio Emergency Data Network).
 
-Über HAMNET können hohe Datenraten übertragen werden, was insbesondere für die Karten-GUI und den E-Mail-Verkehr relevant ist. Die IP-Telefonie (VoIP) profitiert im AREDN-Mesh von ähnlich hoher Bandbreite und niedriger Latenz, sodass Sprachkommunikation in hoher Qualität möglich ist. Ein großer Vorteil liegt in der Unabhängigkeit von öffentlichen Netzen: Sowohl HAMNET als auch das AREDN-Mesh funktionieren im Katastrophenfall autark, ohne Anbindung an Internet oder Stromnetz, und erfüllen damit wesentliche Anforderungen an ein Notfall-Kommunikationsnetz.
 
 AREDN bietet durch seine Mesh-Flexibilität, niedrigere Einstiegsschwelle und den einfachen Aufbau mit Consumer-Hardware besondere Vorteile für die IP-Telefonie im Katastropheneinsatz. 
 
