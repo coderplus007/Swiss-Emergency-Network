@@ -51,7 +51,7 @@ flowchart TD
     classDef power fill:#ff9,stroke:#333,stroke-width:2px
 ```
 
-# HAMNET als IP-Netzwerk mit VoIP-Telefonie
+# Integration von HAMNET als IP-Backbone (VoIP über AREDN)
 ```mermaid
 ---
 config:
@@ -154,7 +154,7 @@ Innerhalb dieser Gesamtarchitektur übernimmt das **HAMNET** die Rolle eines IP-
 
 Die gesamte lokale Infrastruktur (Server, Gateways, Hamnet-Zugangspunkt, etc.) ist an eine **Notstromversorgung** angeschlossen, um stunden- bis tagelangen autonomen Betrieb zu ermöglichen. Durch diese Vernetzung können Informationen und Nachrichten flexibel den optimalen Weg nehmen: z.B. eine Textnachricht kann vom Meshtastic-Netz ins APRS-Netz übergeleitet werden oder eine E-Mail wird zunächst per Hamnet an das Internet geschickt – sollte das Internet aber ausgefallen sein, geht sie automatisch über Winlink per Funk.
 
-## Integration von HAMNET als IP-Netzwerk (inkl. VoIP-Telefonie)
+## Integration von HAMNET als IP-Backbone (VoIP über AREDN)
 ```mermaid
 ---
 config:
@@ -165,7 +165,7 @@ graph TD
     SERVER["Zentraler Server"] --- MAP["Lagekarte & GUI"]
     SERVER --- GATEWAY_MGR["Gateway-Manager\nProtokoll-Umsetzer"]
     
-    %% Die drei Kommunikationssysteme
+    %% Die vier Kommunikationssysteme
     subgraph DMR["DMR (Digital Mobile Radio)"]
         DMR_GW["DMR Gateway/Hotspot"] --- DMR_REPEATER["DMR Repeater"]
         DMR_REPEATER --- DMR_HT["DMR Handfunkgeräte"]
@@ -182,11 +182,17 @@ graph TD
         MESH_GW["Meshtastic Gateway\nLoRa-Modul"] --- MESH_NET["Mesh-Netzwerk\n(LoRa 433/868 MHz)"]
         MESH_NET --- MESH_NODES["Meshtastic Knoten\nTeammitglieder"]
     end
+
+    subgraph AREDN["AREDN (VoIP über HAMNET)"]
+        AREDN_GW["AREDN Gateway\nVoIP-Server"] --- AREDN_NET["AREDN Mesh-Netzwerk"]
+        AREDN_NET --- VOIP_CLIENTS["VoIP Telefone\nSoft-/Hardphones"]
+    end
     
     %% Verbindungen zum zentralen Server
     GATEWAY_MGR --- DMR_GW
     GATEWAY_MGR --- APRS_IGATE
     GATEWAY_MGR --- MESH_GW
+    GATEWAY_MGR --- AREDN_GW
     
     %% Cross-Kommunikationspfade
     DMR_GW -- "GPS-Positionen\n→ APRS-Format" --> GATEWAY_MGR
@@ -208,13 +214,16 @@ graph TD
     classDef dmr fill:#bbf,stroke:#333,stroke-width:1px
     classDef aprs fill:#bfb,stroke:#333,stroke-width:1px
     classDef mesh fill:#fcb,stroke:#333,stroke-width:1px
+    classDef aredn fill:#ff9,stroke:#333,stroke-width:1px
     classDef db fill:#ddf,stroke:#333,stroke-width:1px
     
     class SERVER,MAP,GATEWAY_MGR server
     class DMR_GW,DMR_REPEATER,DMR_HT,BRANDMEISTER dmr
     class APRS_IGATE,APRS_FREQ,APRS_TRACKER,APRS_IS aprs
     class MESH_GW,MESH_NET,MESH_NODES mesh
+    class AREDN_GW,AREDN_NET,VOIP_CLIENTS aredn
     class CALLSIGN_DB db
+
 ```
 Ein zentrales Element der Plattform ist die Anbindung an **HAMNET** (Highspeed Amateur Radio Multimedia Network). HAMNET ist ein von Funkamateuren entwickeltes, unabhängiges IP-Netzwerk, das über schnelle Funkstrecken (vorwiegend im 5 GHz-Band) und Richtfunkverbindungen ein weitreichendes Datennetz bildet.
 
@@ -230,15 +239,31 @@ Eine beispielhafte Netzwerkstruktur: Die Einsatzzentrale (EOC) verbindet sich pe
 
 Einige HAMNET-Knoten verfügen über Anbindungen ans Internet (über Tunnel/VPN zu Universitäten oder Rechenzentren) – dies kann genutzt werden, um im Normalbetrieb Internetzugang bereitzustellen, ist aber für den Notbetrieb nicht erforderlich. Über das HAMNET können auch verteilte **Winlink-Stationen** oder **weitere EOC-Standorte** miteinander kommunizieren, sofern diese ebenfalls am HAMNET teilnehmen. HAMNET dient somit als **IP-Rückgrat**, über das Dienste wie VoIP, Datenbanken oder der GUI-Zugriff netzwerkweit verfügbar gemacht werden.
 
-### VoIP-Telefonie über HAMNET
+### VoIP über AREDN
 
-Da HAMNET ein vollwertiges IP-Netz darstellt, können darauf klassische Dienste wie Voice-over-IP genutzt werden. In der Amateurfunkgemeinschaft existieren bereits SIP-Server innerhalb des HAMNET, über die sich autorisierte Nutzer mit speziellen Rufnummern anmelden können, um Gespräche zu führen.
+Für das vorliegende System wird HAMNET als IP-Backbone eingesetzt, um die verschiedenen Standorte und Komponenten IP-basiert zu vernetzen. In der aktualisierten Architektur wird die VoIP-Telefonie jedoch nicht mehr unmittelbar über HAMNET abgewickelt, sondern über ein parallel eingebundenes AREDN-Mesh (Amateur Radio Emergency Data Network).
 
-Für die Swiss Amateurfunk & Katastrophenmanagement Map bedeutet dies, dass zwischen den eingebundenen Stationen **VoIP-Telefonverbindungen** eingerichtet werden können – beispielsweise zwischen der Einsatzzentrale und externen Notfunkstationen im Feld. Eine mögliche Umsetzung ist die Integration einer IP-Telefonanlage (bspw. Asterisk oder FreePBX) auf der zentralen Plattform oder in der EOC, welche an HAMNET angebunden ist.
+Über HAMNET können hohe Datenraten übertragen werden, was insbesondere für die Karten-GUI und den E-Mail-Verkehr relevant ist. Die IP-Telefonie (VoIP) profitiert im AREDN-Mesh von ähnlich hoher Bandbreite und niedriger Latenz, sodass Sprachkommunikation in hoher Qualität möglich ist. Ein großer Vorteil liegt in der Unabhängigkeit von öffentlichen Netzen: Sowohl HAMNET als auch das AREDN-Mesh funktionieren im Katastrophenfall autark, ohne Anbindung an Internet oder Stromnetz, und erfüllen damit wesentliche Anforderungen an ein Notfall-Kommunikationsnetz.
 
-Alle Teilnehmer erhalten Rufnummern (ggf. basierend auf ihren Amateurfunk-Rufzeichen) und können so direkt miteinander telefonieren, unabhängig vom Telefonfestnetz. Insbesondere erlaubt diese VoIP-Integration auch Konferenzschaltungen oder das Einbinden von Funkgateways: So könnte z.B. ein analoger Funktransceiver über eine SIP-Verbindung fernbedient oder mit in eine Konferenz eingebracht werden. 
+AREDN bietet durch seine Mesh-Flexibilität, niedrigere Einstiegsschwelle und den einfachen Aufbau mit Consumer-Hardware besondere Vorteile für die IP-Telefonie im Katastropheneinsatz. 
 
-HAMNET bietet genügend Bandbreite und geringe Latenz, um eine Sprachqualität ähnlich der öffentlicher Telefonnetze zu erreichen. Bereits heute werden über HAMNET Amateurfunk-Sprachdienste wie **EchoLink** oder andere VoIP-Anwendungen betrieben. Die Integration von VoIP stärkt die Zusammenarbeit zwischen unterschiedlichen Standorten und Teams, da eine unkomplizierte Kommunikation in Telefongesprächsqualität möglich ist, solange die HAMNET-Verbindung steht.
+VoIP-Integration:
+
+    AREDN-Mesh-Knoten an relevanten Standorten für ein vermaschtes IP-Netz zur VoIP-Übertragung.
+
+    VoIP-Telefonie-Server (z. B. Asterisk) auf dem zentralen Server (SIP-PBX im AREDN-Mesh).
+
+    Verschiedene VoIP-Clients: stationäre Festnetztelefone und mobile Softphones mit SIP/RTP-Protokoll.
+
+    Ferngesteuerter Funktransceiver zur Anbindung analoger Funknetze via VoIP.
+
+Da AREDN ein vollwertiges vermaschtes IP-Netz bereitstellt, können darauf klassische Dienste wie Voice-over-IP problemlos genutzt werden. AREDN ist ein von Funkamateuren entwickeltes Mesh-Netz auf Basis handelsüblicher WLAN-Hardware, das speziell für den Notfunk konzipiert wurde. Dadurch können autorisierte Nutzer sich mit speziellen Rufnummern im AREDN-VoIP-Netz anmelden und Gespräche führen – ähnlich wie es im HAMNET über dortige SIP-Server bereits praktiziert wird.
+
+Damit können zwischen den im System eingebundenen Stationen VoIP-Telefonverbindungen eingerichtet werden – beispielsweise zwischen der Einsatzzentrale und externen Notfunkstationen im Feld. Eine mögliche Umsetzung ist die Einbindung einer IP-Telefonanlage (bspw. Asterisk oder FreePBX) auf der zentralen Plattform bzw. in der EOC, die an das AREDN-Mesh angebunden ist.
+
+Alle Teilnehmer erhalten Rufnummern (ggf. basierend auf ihren Amateurfunk-Rufzeichen) und können so direkt miteinander telefonieren, unabhängig vom öffentlichen Telefonnetz. Die VoIP-Integration ermöglicht zudem Konferenzschaltungen oder das Einbinden von Funkgateways: So könnte z. B. ein analoger Funktransceiver über eine SIP-Verbindung fernbedient oder in eine Telefonkonferenz eingebunden werden.
+
+AREDN bietet genügend Bandbreite und geringe Latenz, um eine Sprachqualität ähnlich der öffentlicher Telefonnetze zu erreichen. Bereits heute werden Amateurfunk-Sprachdienste wie EchoLink oder andere VoIP-Anwendungen über derartige breitbandige Funknetze betrieben. Die Einbindung von VoIP über AREDN stärkt die Zusammenarbeit zwischen unterschiedlichen Standorten und Teams, da eine unkomplizierte Kommunikation in Telefongesprächsqualität möglich ist, solange das AREDN-Mesh verbunden bleibt.
 
 ### Rolle von HAMNET im Katastrophenmanagement
 
