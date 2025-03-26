@@ -45,6 +45,7 @@ Bandbreite technisch gegenübergestellt.
   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Notfallkommunikation (Zuverlässigkeit & Geschwindigkeit in Krisen)
+![Vergleich AREDN und Hamnet](../Spider_AREDN_Hamnet.png)
 
 **AREDN:** Der Schwerpunkt von AREDN liegt auf schneller
 **Notfallkommunikation**. Die Knoten bilden ein vermaschtes Ad-hoc-Netz,
